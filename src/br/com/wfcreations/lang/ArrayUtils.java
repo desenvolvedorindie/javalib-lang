@@ -29,6 +29,7 @@
  */
 package br.com.wfcreations.lang;
 
+import java.lang.reflect.Array;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -42,14 +43,50 @@ public abstract class ArrayUtils {
 		return false;
 	}
 
-	public static <T> T[] addAll(T[] array, T... element) {
-		// TODO
-		return null;
+	/*
+	 * Copy from apache/commons-lang (ArrayUtils)
+	 * 
+	 * Licensed to the Apache Software Foundation (ASF) under one or more
+	 * contributor license agreements. See the NOTICE file distributed with this
+	 * work for additional information regarding copyright ownership. The ASF
+	 * licenses this file to You under the Apache License, Version 2.0 (the
+	 * "License"); you may not use this file except in compliance with the
+	 * License. You may obtain a copy of the License at
+	 * 
+	 * http://www.apache.org/licenses/LICENSE-2.0
+	 * 
+	 * Unless required by applicable law or agreed to in writing, software
+	 * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+	 * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+	 * License for the specific language governing permissions and limitations
+	 * under the License.
+	 */
+	@SafeVarargs
+	public static <T> T[] addAll(final T[] array, final T... elements) {
+		if (array == null) {
+			return clone(elements);
+		} else if (elements == null) {
+			return clone(array);
+		}
+		final Class<?> type1 = array.getClass().getComponentType();
+		@SuppressWarnings("unchecked")
+		final T[] joinedArray = (T[]) Array.newInstance(type1, array.length + elements.length);
+		System.arraycopy(array, 0, joinedArray, 0, array.length);
+		try {
+			System.arraycopy(elements, 0, joinedArray, array.length, elements.length);
+		} catch (final ArrayStoreException ase) {
+			final Class<?> type2 = elements.getClass().getComponentType();
+			if (!type1.isAssignableFrom(type2)) {
+				throw new IllegalArgumentException("Cannot store " + type2.getName() + " in an array of " + type1.getName(), ase);
+			}
+			throw ase;
+		}
+		return joinedArray;
 	}
 
-	public static <T> T[] concat(T[] array1, T[] array2) {
-		// T[] result = new T[array1.length + array2.length];
-		// TODO
-		return null;
+	public static <T> T[] clone(final T[] array) {
+		if (array == null)
+			return null;
+		return array.clone();
 	}
 }
